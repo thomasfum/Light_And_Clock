@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Clock</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+
+		
+		
+
+			.slidecontainer {
+				width: 100px;
+			}
+
+			.slider {
+				-webkit-appearance: none;
+				width: 200px;
+				height: 25px;
+				background: #d3d3d3;
+				outline: none;
+				opacity: 0.7;
+				-webkit-transition: .2s;
+				transition: opacity .2s;
+			}
+
+			.slider:hover {
+				opacity: 1;
+			}
+
+			.slider::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 25px;
+				height: 25px;
+				background: #4CAF50;
+				cursor: pointer;
+			}
+
+			.slider::-moz-range-thumb {
+				width: 25px;
+				height: 25px;
+				background: #4CAF50;
+				cursor: pointer;
+			}
+			a {
+				color: #ffffff;
+			}
+			
+
+#header, #footer, #mainbody { position: absolute; left: 0; width: 100%; }
+#header,{ overflow: hidden;  height: 50px;overflow: hidden; }
+#header { top: 0; }
+#mainbody { top: 50px; bottom: 60px; overflow: hidden;  }
+#footer {  overflow: hidden; bottom: 0;height: 60px; }​
+#progressbar {
+  
+  text-align: center;
+   margin: auto;
+}
+
+
+		</style>
+		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+		<script src="three.min.js"></script>
+		<script src="Detector.js"></script>
+		<!--<script src="ColladaLoader.js"></script>-->
+		<script src="GLTFLoader.js"></script>
+		<!--<script src="TrackballControls.js"></script>-->
+		<script src="OrbitControls.js"></script>
+		<script src="RectAreaLightUniformsLib.js"></script>
+		
+	</head>
+	<body>
+	
+	
+<div id="page">
+    <div id="header" class="w3-center">
+	<span>Very first test for CLOCKS.</br>Select the wood base to change its size.</span>
+	<a href="../index.html" title="Back to index.">Back to home</a>
+	</div>
+    <div id="progressbar">
+
+	</div>
+	<div id="mainbody">
+	
+    </div>
+    <div id="footer">
+  <input type="button" id="showClock1" class="w3-btn w3-green" value="Light">
+<input type="button" id="showClock2" class="w3-btn w3-green" value="Table">
+<input type="button" id="showClock3" class="w3-btn w3-green" value="Magic Lantern">
+<p id="p1">Lenght:</p><input type="range" min="100" max="110" value="100" class="slider" id="myRangeX">
+<p id="p2">Width:</p><input type="range" min="80" max="140" value="100" class="slider" id="myRangeY">
+<span class="w3-tag w3-blue" id="clicked">aaa</span>  
+ 	</div>
+		</div>
+
+		<script>
+		//https://github.com/KhronosGroup/glTF-Blender-Exporter
+		//https://github.com/KhronosGroup/glTF-Blender-Exporter/blob/master/docs/user.md
+		//https://github.com/KhronosGroup/glTF-Blender-Exporter/tree/master/scripts#enable-the-exporter
+		//https://bghgary.github.io/glTF/convert-between-workflows/
+		//https://learn.foundry.com/modo/content/help/pages/shading_lighting/shader_items/gltf.html
+		//https://github.com/KhronosGroup/glTF-Blender-Exporter/tree/master/docs
+		//https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_010_Materials.md
+		//http://www.html5gamedevs.com/topic/38227-gltf-dont-apply-alphatransparency-solved/
+		
+		
+		//https://threejs.org/examples/webvr_rollercoaster.html
+		//https://codepen.io/wiledal/pen/WvNvEq
+		
+		
+		//http://bl.ocks.org/fabiovalse/2e8ae04bfce21af400e6
+		//https://virtual.blue/point-drag-controls/
+		
+		
+		//----------------
+		//lights
+		//https://codepen.io/tharns/pen/veVKpM
+		//https://threejs.org/examples/webgl_lights_physical.html
+		
+		//c'est ca!!
+		//http://alteredqualia.com/three/examples/webgl_deferred_arealights_texture.html
+		//https://stackoverflow.com/questions/14997484/three-js-custom-light-geometry
+		
+		//https://threejs.org/examples/webgl_simple_gi.html
+		//http://www.smartjava.org/ltjs/chapter-03/06-area-light.html
+			
+		var prevSec=-1;
+		var MyClock;
+		var lightOn=true;
+		var butonPos=0;
+		var butonAction=false;
+		var butonDown=true;
+		var backgroundColor= 0xf0f0f0 ; 
+		var rotateCamera=true;
+		var rotateCameraAngle=0;
+		var rotateCameraAngleFactor=0.55;
+		var go=false;
+		var rotateLight=0;
+		var rectLight01=[];
+		var rectLight02=[];
+		var rectLight03=[];
+		var rectLightView=[];
+		
+		var sides=8;
+    var angle = 360 / sides;
+    var r=0.5;
+	
+	var RotateLightCenter = new THREE.Vector3(2, 0, 2);
+	
+		
+		
+		
+THREE.Object3D.prototype.rotateAroundWorldAxis = function() {
+
+    var q1 = new THREE.Quaternion();
+    return function ( point, axis, angle ) {
+
+        q1.setFromAxisAngle( axis, angle );
+
+        this.quaternion.multiplyQuaternions( q1, this.quaternion );
+
+        this.position.sub( point );
+        this.position.applyQuaternion( q1 );
+        this.position.add( point );
+
+        return this;
+    }
+
+}();
+
+function radians(a)
+{
+		 return a *Math.PI/180;
+}		 
+	function createAreaMyEmitter( x,y,z, color ) {
+		var intensity = 2;
+		console.log(RotateLightCenter);
+		var rectLight1 = new THREE.RectAreaLight( color, intensity,  0.4, 1 );
+		rectLight1.position.set( RotateLightCenter.x+x, z, RotateLightCenter.y+y );
+		rectLight1.lookAt( RotateLightCenter.x+x*2, z, RotateLightCenter.y+y*2 );
+		//rectLight1.translateX(RotateLightCenter.x);
+		scene.add( rectLight1 );
+		
+		var rectLightHelper1 = new THREE.RectAreaLightHelper( rectLight1 );
+		scene.add( rectLightHelper1 );
+		
+		return rectLight1;
+
+	}
+	function createAreaMyEmitterView(  object ) 
+	{
+	
+		var vector = new THREE.Vector3();
+		object.getWorldPosition(vector);
+		console.log(vector.y);
+
+		var geometry2 = new THREE.PlaneGeometry( 1, 1);
+		var material2 = new THREE.MeshStandardMaterial( {color: object.color, side: THREE.DoubleSide} );
+		//material2.emissive =color;
+		//material2.transparent=true;//set it manually,as it is not exported correctly
+		//material2.opacity=0.5;//set it manually,as it is not exported correctly
+		var plane2 = new THREE.Mesh( geometry2, material2 );
+		plane2.rotation.y=90  * Math.PI/180;
+		scene.add( plane2 );
+		geometry2.translate(vector.z,vector.y,vector.x-0.01);
+		
+		return plane2;
+	}
+			
+		
+		var concreteX_offset=100;
+		var concreteY_offset=100;
+		var concreteWidth=8;
+		
+		
+			var txt= document.getElementById('clicked'); 
+			txt.style.display = "none";
+			document.getElementById('p1').style.display = "none";
+			document.getElementById('p2').style.display = "none";
+			document.getElementById('myRangeX').style.display = "none";
+			document.getElementById('myRangeY').style.display = "none";
+		
+		var sliderX = document.getElementById("myRangeX");
+		// Update the current slider value (each time you drag the slider handle)
+		sliderX.oninput = function() {
+			concreteX_offset=this.value;
+			//console.log('offsetX='+concreteX_offset);
+			
+			concrateBase.scale.set(concreteX_offset/100,1,concreteY_offset/100);
+		}
+		var sliderY = document.getElementById("myRangeY");
+		// Update the current slider value (each time you drag the slider handle)
+		sliderY.oninput = function() {
+			concreteY_offset=this.value;
+			console.log('offsetY='+concreteY_offset);
+			concrateBase.scale.set(concreteX_offset/100,1,concreteY_offset/100);
+			
+			
+		}
+		
+		var showClock1 = document.getElementById('showClock1');
+		showClock1.style.cursor = 'pointer';
+		showClock1.onclick = function() {
+		/*
+				if(lightOn==true)
+				{
+					console.log("light off");
+					//Sun.visible=false;
+					//Lamp.visible=false;
+					ambientLight.visible=false;
+					directionalLight.visible=false;
+					scene.background = new THREE.Color( 0x000000 ); 
+					lightOn=false;
+				}
+				else
+				{
+					console.log("light on");
+					//Sun.visible=true;
+					//Lamp.visible=true;
+					ambientLight.visible=true;
+					directionalLight.visible=true;
+					scene.background = new THREE.Color( backgroundColor ); 
+					lightOn=true;
+				}
+				//material.needsUpdate = true;
+				*/
+				rotateLight=rotateLight+ ((Math.PI / 180))/4;
+				
+				var xAxis = new THREE.Vector3(0,1,0);
+				
+				//rectLight[0].rotateOnAxis( xAxis,0.1);
+				for (var i = 0; i < sides; i++) {
+	
+				rectLight01[i].rotateAroundWorldAxis(RotateLightCenter, xAxis, 0.1);
+				//rectLight02[i].rotateAroundWorldAxis(RotateLightCenter, xAxis, 0.1);
+				//rectLight03[i].rotateAroundWorldAxis(RotateLightCenter, xAxis, 0.1);
+				}
+				/*
+				
+				var xAxis = new THREE.Vector3(1,0,0);
+				rotateAroundWorldAxis(rectLight[0], xAxis, rotateLight);
+*/
+							
+		};
+		var showClock2 = document.getElementById('showClock2');
+		showClock2.style.cursor = 'pointer';
+		showClock2.onclick = function() {
+		/*
+			if(table.visible==true)
+				table.visible=false;
+				else
+				table.visible=true;
+				
+			*/
+		};
+		var showClock3 = document.getElementById('showClock3');
+		showClock3.style.cursor = 'pointer';
+		showClock3.onclick = function() {
+			/*
+						console.log('----'+ camera.position.x +','+  camera.position.y+','+ camera.position.z );
+			if(lightLamp.visible==false)
+						lightLamp.visible=true;
+			else
+						lightLamp.visible=false;
+						*/
+		};
+
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+			var container, stats, clock;
+			var camera, scene, renderer, Clock1,Clock2,Clock3;
+			var geometry, material, concrateBase;
+			var Button;
+			var A_Alarm,A_Minutes,A_Hours,A_Seconds;
+			var table;
+			var Glass;
+			var Sun,Lamp;			
+			var lightLamp;
+			var ambientLight;
+			var directionalLight;
+			var lastElementMouseOver="";
+			var raycaster = new THREE.Raycaster(); 
+			var mouse = new THREE.Vector2(); 
+			
+			
+/*
+			function createAreaEmitter( light ) {
+
+				var geometry = new THREE.PlaneGeometry( light.width * 2, light.height * 2 );
+
+				var m = new THREE.Matrix4();
+				m.makeRotationX( Math.PI/2 );
+				geometry.applyMatrix( m );
+
+				var material = new THREE.MeshBasicMaterial( { color: light.color.getHex(), vertexColors: THREE.FaceColors } );
+				material.map = light.texture;
+				//material.alphaTest = 0.5;
+
+				var emitter = new THREE.Mesh( geometry, material );
+
+				emitter.position = light.position;
+				emitter.rotation = light.rotation;
+
+				return emitter;
+}
+	*/		 
+			init();
+			animate();
+			function init() {
+				container = document.getElementById( 'mainbody' );
+				var Width = container.clientWidth;
+				var Height = container.clientHeight;
+		
+			
+				camera = new THREE.PerspectiveCamera( 65,  Width / Height, 0.2, 2000 );
+				//camera.position.set( 8, 10, 8 );
+				camera.position.set( 8, 4, 16 );
+				camera.lookAt( new THREE.Vector3( 0,4, 0 ) );
+			
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( backgroundColor ); 
+				clock = new THREE.Clock();
+				
+				
+				
+				/*
+				
+				// loading manager
+				var loadingManager = new THREE.LoadingManager( function() {
+					//scene.add( Clock2 );
+					//scene.add( Clock1 );
+					//scene.add( Clock3 );
+					console.log('All clocks OK');
+					document.getElementById('progressbar').style.display = "none";
+					
+				} );
+				*/
+					// model
+					/*
+				var loader = new THREE.GLTFLoader();
+				loader.load( 'clock6.glb', function ( gltf ) {
+
+					MyClock = gltf.scene;
+					MyClock.visible=false;
+					gltf.animations; // Array<THREE.AnimationClip>
+					gltf.scene; // THREE.Scene
+					gltf.scenes; // Array<THREE.Scene>
+					gltf.cameras; // Array<THREE.Camera>
+					gltf.asset; // Object
+					scene.add( gltf.scene );
+					console.log("nb obj="+gltf.scene.children.length);
+					for (var i = 0; i < gltf.scene.children.length; i++) {
+						
+						console.log("-- obj="+gltf.scene.children[i].name);
+						if(gltf.scene.children[i].name=='A_Alarm')
+							A_Alarm=gltf.scene.children[i];
+						if(gltf.scene.children[i].name=='A_Minutes')
+
+						if((gltf.scene.children[i].name!='Cylinder_rot')&&(gltf.scene.children[i].name=='Cube'))
+						{
+							gltf.scene.children[i].castShadow = true; //default is false
+							gltf.scene.children[i].receiveShadow = true; //default
+						}	
+							
+						if(gltf.scene.children[i].name=='Buton')
+						{
+							Button=gltf.scene.children[i];
+							//Button.position.z=
+						}	
+
+						if(gltf.scene.children[i].name=='glass')
+						{
+							Glass=gltf.scene.children[i];
+							Glass.renderOrder =100;
+						//	Glass.material.transparent=true;//set it manually,as it is not exported correctly
+						//	Glass.material.opacity=0.2;//set it manually,as it is not exported correctly
+						 //   console.log( 'Glass:'+ Glass + ' '+ Glass.material.transparent+' '+ Glass.material.opacity);	
+						}
+						if(gltf.scene.children[i].name=='Cylinder_rot')
+						{
+							
+							gltf.scene.children[i].renderOrder =101;
+						
+						    console.log( 'Cylinder_rot:'+ gltf.scene.children[i] + ' '+ gltf.scene.children[i].material.transparent+' '+ gltf.scene.children[i].material.opacity);	
+						}
+						
+						if(gltf.scene.children[i].name=='Cube')
+						{
+							gltf.scene.children[i].renderOrder =102;
+						}
+						
+						if(gltf.scene.children[i].name=='Sun')
+						{
+							Sun=gltf.scene.children[i];
+							  console.log( 'Sun: ok');	
+							}
+						if(gltf.scene.children[i].name=='Lamp')
+						{
+							Lamp=gltf.scene.children[i];
+							console.log( 'Lamp: ok');	
+						}
+			
+    				}
+					
+				}, 
+				// called while loading is progressing
+				function ( xhr ) {
+					//console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+					document.getElementById('progressbar').textContent= Math.round(xhr.loaded / xhr.total * 100)  + '% loaded' ;
+				},
+				function ( e ) {
+					console.error( e );
+
+				} );
+*/
+	/*			
+					var areaLight1 = new THREE.RectAreaLight( 0x00ffff, 4 );
+				areaLight1.position.set( 0.0001, 7, -15.5001 );
+				areaLight1.rotation.set( -1.474719, 0, 0 );
+				areaLight1.width = 12;
+				areaLight1.height = 6;
+				
+				//var texture = THREE.ImageUtils.loadTexture( "glass.gif" );
+				//texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+				//texture.anisotropy = 4;
+				//areaLight1.texture = texture;
+				
+				scene.add( areaLight1 );
+				var meshEmitter = createAreaEmitter( areaLight1 );
+				scene.add( meshEmitter );
+		*/	
+/*						
+var width = 1;
+var height = 1;
+var intensity = 4;
+var rectLight1 = new THREE.RectAreaLight( 0x00ffff, intensity,  width, height );
+rectLight1.position.set( 5, 2, 0 );
+rectLight1.lookAt( 0, 2, 0 );
+scene.add( rectLight1 );
+var rectLightHelper1 = new THREE.RectAreaLightHelper( rectLight1 );
+scene.add( rectLightHelper1 );
+
+
+var rectLight2 = new THREE.RectAreaLight( 0xff00ff, intensity,  width, height );
+rectLight2.position.set( 5, 1, 0 );
+rectLight2.lookAt( 0, 1, 0 );
+scene.add( rectLight2 );
+var rectLightHelper2 = new THREE.RectAreaLightHelper( rectLight2 );
+scene.add( rectLightHelper2 );
+
+var rectLight1 =createAreaEmitter(2,0x00ffff);
+*/
+
+	var color1=[0xffff00,0xff00ff,0x00ffff,0xff0000,0x0000ff,0x00ff00,0xf0f000,0x000f0f0f];
+	var color2=[0x00ffff,0xff0000,0x0000ff,0x00ff00,0xf0f000,0x0f0f00,0xffff00,0xff00ff];
+	var color3=[0x0000ff,0x00ff00,0xf0f000,0x000f0f0f,0xffff00,0xff00ff,0x00ffff,0xff0000];
+    for (var i = 0; i < sides; i++) {
+        var x = Math.cos( radians( i * angle ) ) * r;
+        var y = Math.sin( radians( i * angle ) ) * r;
+	 rectLight01[i]=createAreaMyEmitter(x,y,1,color1[i]);
+	// rectLight02[i]=createAreaMyEmitter(x,y,1,color2[i]);
+	// rectLight03[i]=createAreaMyEmitter(x,y,2,color3[i]);
+	//scene.updateMatrixWorld();
+	//rectLightView[i]=createAreaMyEmitterView(rectLight[i]);
+
+    }
+    
+
+/*
+rectLight[0]=createAreaMyEmitter(5,0,2,0x00ffff);
+rectLight[1]=createAreaMyEmitter(5,0,1,0xff00ff);
+rectLight[2]=createAreaMyEmitter(5,0,0,0xffff00);
+scene.updateMatrixWorld();
+rectLightView[0]=createAreaMyEmitterView(rectLight[0]);
+rectLightView[1]=createAreaMyEmitterView(rectLight[1]);
+rectLightView[2]=createAreaMyEmitterView(rectLight[2]);
+*/
+
+var rectLight1 = new THREE.RectAreaLight( 0xffffff, 1,  1, 3 );
+		rectLight1.position.set( 4, 1, 0 );
+		rectLight1.lookAt( 10, 1, 0 );
+		scene.add( rectLight1 );
+	
+		var rectLightHelper1 = new THREE.RectAreaLightHelper( rectLight1 );
+		scene.add( rectLightHelper1 );
+
+	
+
+/*
+var texture = THREE.ImageUtils.loadTexture( "glass.gif" );
+texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+texture.anisotropy = 4;
+rectLightHelper.texture = texture;
+*/
+
+
+
+
+//	var meshEmitter = createAreaEmitter( rectLight );
+	//			scene.add( meshEmitter );
+				
+						
+				//------ concrete base
+				geometry = new THREE.BoxGeometry( 14, 1, 8 );
+				
+				//material = new THREE.MeshBasicMaterial(  );
+				//material = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.SmoothShading } );
+				material = new THREE.MeshStandardMaterial( { color: 0xffffff} );
+				
+	
+				var textureLoader = new THREE.TextureLoader();
+				textureLoader.load( "hardwood2_diffuse.jpg", function ( map ) {
+					map.anisotropy = 8;
+					material.map = map;
+					material.needsUpdate = true;
+				} );
+
+				var textureLoader = new THREE.TextureLoader();
+				textureLoader.load( "hardwood2_roughness.jpg", function ( map ) {
+					map.anisotropy = 8;
+					material.roughnessMap = map;
+					material.needsUpdate = true;
+				} );
+
+				concrateBase = new THREE.Mesh( geometry, material );
+				//concrateBase.position.set(-4, -2.5, -2);
+				concrateBase.position.set(-4, -1.3, -2);
+				concrateBase.name="Wood base";
+				
+				concrateBase.castShadow = true; //default is false
+				concrateBase.receiveShadow = true; //default
+				concrateBase.renderOrder =101;
+				
+				scene.add( concrateBase );
+				
+			
+				
+				var geometry2 = new THREE.PlaneGeometry( 7, 5, 32 );
+				
+				
+				
+				var material2 = new THREE.MeshStandardMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+				
+				material2.transparent=true;//set it manually,as it is not exported correctly
+				material2.opacity=0.2;//set it manually,as it is not exported correctly
+						
+				//https://threejs.org/examples/?q=light#webgl_lights_spotlights
+				
+				
+				var plane2 = new THREE.Mesh( geometry2, material2 );
+				plane2.rotation.y=90  * Math.PI/180;
+				
+				//plane2.castShadow = true; //default is false
+				//plane2.receiveShadow = true; //default
+				plane2.renderOrder =102;
+				scene.add( plane2 );
+				geometry2.translate(2,1.5,-4);
+				
+				
+				var geometry3 = new THREE.PlaneGeometry( 7, 5, 32 );
+				var material3 = new THREE.MeshStandardMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+				
+				 material3.roughness= 0.2;
+				material3.metalness=1;
+	
+	
+				var plane3 = new THREE.Mesh( geometry3, material3 );
+				plane3.rotation.y=90  * Math.PI/180;
+				
+			//	plane3.castShadow = true; //default is false
+		//		plane3.receiveShadow = true; //default
+				
+				
+				scene.add( plane3 );
+				geometry3.translate(2,1.5,-10);
+				
+				
+				//lamp
+				/*
+				lightLamp = new THREE.PointLight( 0xff0000, 1, 100 );
+				lightLamp.position.set(2.25, 0.5, -3.65);
+				lightLamp.castShadow = true;            // default false
+				//scene.add( lightLamp );
+				//Set up shadow properties for the light
+				lightLamp.shadow.mapSize.width = 1024;  // default
+				lightLamp.shadow.mapSize.height = 1024; // default
+				lightLamp.shadow.camera.near = 0.5;       // default
+				lightLamp.shadow.camera.far = 500      // default
+				
+				
+				var sphereSize = 1;
+				var pointLightHelper = new THREE.PointLightHelper( lightLamp, sphereSize );
+				scene.add( pointLightHelper );
+
+				*/
+				/*
+				  //////////////////////////////////////////////////////////////////////////
+	            // Add Model to Scene
+	            //////////////////////////////////////////////////////////////////////////
+	            //var mapTexture = THREE.TextureLoader("surface.jpg");
+	            var geometry44 = new THREE.BoxGeometry( 1, 1, 1 );
+	            //var material = new THREE.MeshPhongMaterial({map:THREE.TextureLoader("emission-front.png")});
+	            var material44 = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('surface2.png') } );
+	            //material.map = THREE.TextureLoader("surface.jpg");
+	            material44.emissiveMap = THREE.ImageUtils.loadTexture('emissivMap3.png');
+	            //material.emissiveMap = THREE.ImageUtils.loadTexture('emissivMap2.png');
+	            material44.emissive = new THREE.Color(0x00ffff);
+	            
+	            var mesh44 = new THREE.Mesh(geometry44,material44);
+                mesh44.position.set( 0, 0, 0 );
+                scene.add( mesh44 );
+				*/
+				
+							
+				/*
+				geometry = new THREE.BoxGeometry( 1, 1, 1 );
+				material = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.SmoothShading } );
+				concrateBase = new THREE.Mesh( geometry, material );
+				//concrateBase.position.set(-4, -2.5, -2);
+				concrateBase.position.set(2.25, 0.5, -3.65);
+				scene.add( concrateBase );
+				*/
+				/*
+				ambientLight = new THREE.AmbientLight( 0xcccccc, 0.4 );
+				scene.add( ambientLight );
+				directionalLight = new THREE.DirectionalLight( 0xffffff, 0.8 );
+				directionalLight.position.set( 1, 1, 0 ).normalize();
+				scene.add( directionalLight );
+				//{transparentSortLogic: THREE.CAMERA_PROXIMITY}
+				*/
+	//			renderer = new THREE.WebGLRenderer({transparentSortLogic: THREE.CAMERA_PROXIMITY});
+				renderer = new THREE.WebGLRenderer({transparent: true, antialias: true});
+				
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+				
+				renderer.shadowMap.enabled = true;
+				//renderer.shadowMap.type = THREE.PCFShadowMap; // default THREE.PCFShadowMap
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.
+			
+				
+				renderer.autoClear = false;
+
+			
+				renderer.setSize(Width, Height);
+				
+				
+				
+		
+			
+				// controls
+				controls = new THREE.OrbitControls( camera, renderer.domElement );
+				//controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
+				controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+				controls.dampingFactor = 0.25;
+				controls.screenSpacePanning = false;
+				controls.minDistance = 2;
+				controls.maxDistance = 100;
+				controls.maxPolarAngle = Math.PI / 2;
+				
+			/*
+  				// to disable zoom
+					controls.enableZoom = false;
+
+					// to disable rotation
+					controls.enableRotate = false;
+
+					// to disable pan
+					controls.enablePan = false;
+			*/
+				
+				
+				
+				container.appendChild( renderer.domElement );
+				
+				//
+				//stats = new Stats();
+				//container.appendChild( stats.dom );
+				//
+				window.addEventListener( 'resize', onWindowResize, false );
+			}
+			function onWindowResize() {
+				var Width = container.clientWidth;
+				var Height = container.clientHeight;
+				
+				camera.aspect = Width / Height;
+				camera.updateProjectionMatrix();
+				renderer.setSize(Width, Height);
+			}
+			function animate() {
+				requestAnimationFrame( animate );
+				//render();
+				//controls.update();
+				//stats.update();
+				controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
+				render();
+				
+			}
+			function render() {
+				//var delta = clock.getDelta();
+				//if ( elf !== undefined ) {
+					//elf.rotation.z += delta * 0.5;
+				//	}
+				/*
+				UpdateClock();
+				
+				if(butonAction==true)
+				{
+					if(butonDown==true)
+					{
+						butonPos++;
+						Button.translateY( -0.01 );
+						if(butonPos>3)
+							butonDown=false;
+					}
+					else
+					{
+						butonPos--;
+						if(butonPos==0)
+							butonAction=false;
+						Button.translateY( 0.01 );
+					}	
+				}
+				
+				if((rotateCamera==true)&&(go==true))
+				{
+					rotateCameraAngle++;
+					
+					if(rotateCameraAngle>=30)
+						rotateCamera=false;
+					camera.translateX(rotateCameraAngleFactor);
+					camera.translateZ(-rotateCameraAngleFactor-0.15);
+					rotateCameraAngleFactor=rotateCameraAngleFactor-0.015;//slow at the end
+				}
+					*/
+					
+					
+				
+				raycaster.setFromCamera( mouse, camera ); 
+				
+				// calculate objects intersecting the picking ray 
+				var intersects =  raycaster.intersectObjects( scene.children,true ); 
+			  
+				/*
+				for ( var i = 0; i < intersects.length; i++ ) { 
+					//intersects[ i ].object.material.color.set( 0xff0000 ); 
+					console.log('--->' + intersects[ i ].object.name);
+				}
+				*/		  
+				if(intersects.length>0)
+				{
+					//console.log('--->' + intersects[ 0 ].object.name);
+					lastElementMouseOver=intersects[ 0 ].object.name;
+					
+				}
+				else
+					txt.style.display = "none";
+				renderer.render( scene, camera );
+			}
+			
+			
+			function onMouseDown( event ) { 
+				if((lastElementMouseOver=="node0")||(lastElementMouseOver==""))
+					lastElementMouseOver="clock";
+				 txt.textContent = lastElementMouseOver + " clicked";
+				 txt.style.display = "block";
+				 if(lastElementMouseOver=="Buton")
+				 {
+					butonPos=0;
+					butonAction=true;
+					butonDown=true;
+					console.log('Button clicked');
+				 }
+				 
+				 if(lastElementMouseOver=="Table")
+				 {
+					console.log('=====>show');
+					document.getElementById('p1').style.display = "inline";
+					document.getElementById('p2').style.display = "inline";
+					document.getElementById('myRangeX').style.display = "inline";
+					document.getElementById('myRangeY').style.display = "inline";
+				}
+				else
+				{
+					document.getElementById('p1').style.display = "none";
+					document.getElementById('p2').style.display = "none";
+					document.getElementById('myRangeX').style.display = "none";
+					document.getElementById('myRangeY').style.display = "none";
+				}
+			 
+			} 
+			
+			
+			container.addEventListener( 'touchstart', onMouseDown, false );
+			container.addEventListener( 'mousedown', onMouseDown, false );
+
+
+			function onMouseMove( event ) { 
+			  // calculate mouse position in normalized device coordinates 
+			  // (-1 to +1) for both components 
+			  mouse.x =  ( event.clientX / window.innerWidth ) * 2 - 1; 
+			  mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1; 
+			} 
+			
+			function onTouchmove( event ) { 
+			  
+			  //domEvent.preventDefault();
+			  
+			  // calculate mouse position in normalized device coordinates 
+			  // (-1 to +1) for both components 
+			 // mouse.x =   ( (event.targetTouches[0] ? event.targetTouches[0].pageX : event.changedTouches[event.changedTouches.length-1].pageX) / window.innerWidth ) * 2 - 1; 
+			 // mouse.y = - ( (event.targetTouches[0] ? event.targetTouches[0].pageY : event.changedTouches[event.changedTouches.length-1].pageY) / window.innerHeight ) * 2 + 1; 
+ 
+			 
+				event.preventDefault();
+
+				var mouseX	= +(event.touches[ 0 ].pageX / window.innerWidth ) * 2 - 1;
+				var mouseY	= -(event.touches[ 0 ].pageY / window.innerHeight) * 2 + 1;
+						 
+			 
+			} 
+			
+			container.addEventListener( 'touchmove', onTouchmove, false );  
+			container.addEventListener( 'mousemove', onMouseMove, false );  
+			
+			
+				
+			
+			
+			
+		</script>
+	</body>
+</html>

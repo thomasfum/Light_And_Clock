@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>MyPlantPlanner 3d</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<!-- Origin Trial Token, feature = WebXR Device API (For Chrome M69+), origin = https://vpsmetso.com, expires = 2018-12-26 -->
+		<!--<meta http-equiv="origin-trial" data-feature="WebXR Device API (For Chrome M69+)" data-expires="2018-12-26" content="Alv0pTe6LzMiE7UDufm1btbZ6zcgHUDWbsCPLsqN/LKVd/OC4IIv4iIcA+cWoWdYBYPlWJwLmtT0UIFlOtBC7gYAAABneyJvcmlnaW4iOiJodHRwczovL3Zwc21ldHNvLmNvbTo0NDMiLCJmZWF0dXJlIjoiV2ViWFJEZXZpY2VNNjkiLCJleHBpcnkiOjE1NDU4MTM4MTcsImlzU3ViZG9tYWluIjp0cnVlfQ=="> ->
+		<!-- Origin Trial Token, feature = WebXR Gamepad Support, origin = https://vpsmetso.com, expires = 2018-12-26 -->
+		<!--<meta http-equiv="origin-trial" data-feature="WebXR Gamepad Support" data-expires="2018-12-26" content="Anxxk0MiInRFRzacLj5zyySZ2XwDdRGp7qk3nJcN9ssF4xEgY0SiJz3aRwVj6s8LnJrHGQAlfg0dHtedLWdnmwQAAABseyJvcmlnaW4iOiJodHRwczovL3Zwc21ldHNvLmNvbTo0NDMiLCJmZWF0dXJlIjoiV2ViWFJHYW1lcGFkU3VwcG9ydCIsImV4cGlyeSI6MTU0NTgxMzgxNywiaXNTdWJkb21haW4iOnRydWV9"> 	-->
+
+
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #101010;
+				color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+			a {
+				color: #48f;
+			}
+			
+			.slidecontainer {
+				width: 100px;
+			}
+
+			.slider {
+				-webkit-appearance: none;
+				width: 200px;
+				height: 25px;
+				background: #d3d3d3;
+				outline: none;
+				opacity: 0.7;
+				-webkit-transition: .2s;
+				transition: opacity .2s;
+			}
+
+			.slider:hover {
+				opacity: 1;
+			}
+
+			.slider::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 25px;
+				height: 25px;
+				background: #4CAF50;
+				cursor: pointer;
+			}
+
+			.slider::-moz-range-thumb {
+				width: 25px;
+				height: 25px;
+				background: #4CAF50;
+				cursor: pointer;
+			}
+			#header, #footer, #mainbody { position: absolute; left: 0; width: 100%; }
+			#header,{ overflow: hidden;  height: 50px;overflow: hidden; }
+			#header { top: 0; }
+			#mainbody { top: 50px; bottom: 60px; overflow: hidden;  }
+			#footer {  overflow: hidden; bottom: 0;height: 60px; }​
+			#progressbar {
+			  
+			  text-align: center;
+			   margin: auto;
+			}
+			 #canvas_33 {   display: none; }
+			 #container_33 {   display: none; }
+			 
+			 #mydiv {
+				position: absolute;
+				z-index: 9;
+				background-color: #f1f1f1;
+				text-align: center;
+				border: 1px solid #d3d3d3;
+				visibility: hidden;
+				color: #000;
+			}
+
+			#mydivheader {
+				padding: 8px;
+				cursor: move;
+				z-index: 10;
+				background-color: #2196F3;
+				color: #fff;
+				width:280px;
+			}
+			
+
+		</style>
+		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+	</head>
+	<body>
+
+		<script src="three.js"></script>
+		<script src="WebVR.js"></script>
+		<script src="GLTFLoader.js"></script>
+		<script src="OrbitControls.js"></script>
+	<!--	<script src="CSS3DRenderer.js"></script>-->
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+		<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+		
+		
+		<body>
+			
+			<div id="page">
+				<div id="header" class="w3-center">
+					<span>Very first test for MyPlantPlanner.</br>Select the concrete base to change its size.</span>
+					<a href="../index.html" title="Back to index.">Back to home</a>
+				</div>
+				<div id="progressbar">
+				<div id="mydiv">
+				  <div id="mydivheader"><span id="mydivheaderTxt">Click here to move</span><input type="button" id="closeDiv" class="w3-btn w3-green w3-display-topright" value="X"></div>
+				  <span id="mydivcontentTxt">
+				  <p></p>
+				  <p>Properties</p>
+				  <p></p>
+				  </span>
+				</div>
+				</div>
+				<div id="mainbody">
+				
+				</div>
+				<div id="footer">
+					<input type="button" id="showmp800" class="w3-btn w3-green" value="MP800">
+					<input type="button" id="showhp6" class="w3-btn w3-green" value="HP6">
+					<input type="button" id="showsymons" class="w3-btn w3-green" value="Symons 7ft">
+					<input type="button" id="showdusty" class="w3-btn w3-green" value="Dusty">
+					<input type="button" id="showCharge" class="w3-btn w3-green" value="C">
+					<p id="p1">Lenght:</p><input type="range" min="100" max="110" value="100" class="slider" id="myRangeX">
+					<p id="p2">Width:</p><input type="range" min="80" max="140" value="100" class="slider" id="myRangeY">
+					<span class="w3-tag w3-blue" id="clicked">aaa</span>  
+				</div>
+			</div>
+			<!--
+		<canvas id="canvas_33"></canvas>
+		<div id='container_33'></div>
+				-->
+		<script>
+			//globals
+			var container;
+			var camera, scene, renderer, cssRenderer;
+			var controller1, controller2,controls;
+			var room;
+			var count = 0;
+			var radius = 0.08;
+			var normal = new THREE.Vector3();
+			var relativeVelocity = new THREE.Vector3();
+			var clock = new THREE.Clock();
+			var hp6;
+			var geometry, material, concrateBase;
+			var tower, tower_material, tower_mesh;
+			var bin, bin_material, bin_mesh;
+			var pilar1, pilar1_material, pilar1_mesh;
+			var pilar2, pilar2_material, pilar2_mesh;
+			var pilar3, pilar3_material, pilar3_mesh;
+			var pilar4, pilar4_material, pilar4_mesh;
+			var CBpilar1_mesh,CBpilar2_mesh,CBpilar3_mesh,CBpilar4_mesh;
+			
+			var mp800,hp6,symons;
+			var concreteX_offset=100;
+			var concreteY_offset=100;
+			var concreteWidth=8;
+			var concreteHeight=14;
+			
+			//mouse
+			var lastElementMouseOver="";
+			var lastElementMouseOverSelectable=false;
+			var raycaster = new THREE.Raycaster(); 
+			var mouse = new THREE.Vector2(); 
+			var mouseDown = new THREE.Vector2(); 
+			var MouseClickDown=false;
+			var mouseUsed=false;
+			var renderer_vr_isPresenting=false;
+			var cssScene;
+			
+			var Width; 
+		    var Height;
+			var mixer,Dusty,idleAction, walkAction,DustySetp;
+			var INTERSECTED=null;
+			
+			container = document.getElementById( 'mainbody' );
+			
+			//var arrow;
+		/*
+		var  geometryCanvas, textureCanvas, meshCanvas, ctx;
+
+		var canvas = document.getElementById('canvas_33'),
+		ctx = canvas.getContext('2d');
+				
+		var chart = Highcharts.chart('container_33', {
+
+    credits: {
+        enabled: false
+    },
+
+    xAxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    },
+
+    series: [{
+        data: [29.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4]
+    }]
+
+});
+		*/
+
+		//flying properties div
+		//Make the DIV element draggagle:
+		dragElement(document.getElementById("mydiv"),100,20);
+
+		function dragElement(elmnt,x,y) {
+		  var pos1 = x, pos2 = y, pos3 = 0, pos4 = 0;
+		  if (document.getElementById(elmnt.id + "header")) {
+			/* if present, the header is where you move the DIV from:*/
+			document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+		  } else {
+			/* otherwise, move the DIV from anywhere inside the DIV:*/
+			elmnt.onmousedown = dragMouseDown;
+		  }
+
+		  function dragMouseDown(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// get the mouse cursor position at startup:
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			document.onmouseup = closeDragElement;
+			// call a function whenever the cursor moves:
+			document.onmousemove = elementDrag;
+		  }
+
+		  function elementDrag(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// calculate the new cursor position:
+			pos1 = pos3 - e.clientX;
+			pos2 = pos4 - e.clientY;
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			// set the element's new position:
+			elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+			elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+		  }
+
+		  function closeDragElement() {
+			/* stop moving when mouse button is released:*/
+			document.onmouseup = null;
+			document.onmousemove = null;
+		  }
+		}
+		
+		
+			function setWeight( action, weight ) {
+				action.enabled = true;
+				action.setEffectiveTimeScale( 1 );
+				action.setEffectiveWeight( weight );
+			}
+		
+		
+			var txt= document.getElementById('clicked'); 
+			txt.style.display = "none";
+			document.getElementById("showmp800").disabled = true;
+			document.getElementById("showhp6").disabled = true;
+			document.getElementById("showsymons").disabled = true;
+		
+			//-----------------------
+			//buttons
+			var closeDiv = document.getElementById('closeDiv');
+				closeDiv.style.cursor = 'pointer';
+				closeDiv.onclick = function() {
+				document.getElementById("mydiv").style.visibility = "hidden";
+			};
+			
+			var showmp800 = document.getElementById('showmp800');
+			showmp800.style.cursor = 'pointer';
+			showmp800.onclick = function() {
+				mp800.visible=true;
+				hp6.visible=false;
+				symons.visible=false;
+				bin_mesh.position.set(-7, 9, 0);
+			};
+			var showhp6 = document.getElementById('showhp6');
+			showhp6.style.cursor = 'pointer';
+			showhp6.onclick = function() {
+				mp800.visible=false;
+				hp6.visible=true;
+				symons.visible=false;
+				bin_mesh.position.set(-7, 7, 0);
+			};
+			var showsymons = document.getElementById('showsymons');
+			showsymons.style.cursor = 'pointer';
+			showsymons.onclick = function() {
+				mp800.visible=false;
+				hp6.visible=false;
+				symons.visible=true;
+				bin_mesh.position.set(-7, 8, 0);
+			};
+			var showCharge = document.getElementById('showCharge');
+			showCharge.style.cursor = 'pointer';
+			showCharge.onclick = function() {
+				console.log("adding mp800 ");
+				var i;
+				for (j = -10; j < 10; j++) { 
+					for (i = -10; i < 10; i++) { 
+    					var a=mp800.clone();
+						
+						a.name="MP800";
+						a.selectable=1;
+					a.traverse((node) => {
+						node.name="MP800-"+i+"-"+j;
+						node.selectable=1;
+					});
+						a.visible=true;
+						a.translateX(i*4); 
+						a.translateZ(j*4); 
+						scene.add( a );
+						console.log("add mp800 "+i);
+					}
+				}
+			};
+			
+			
+			var showdusty = document.getElementById('showdusty');
+			showdusty.style.cursor = 'pointer';
+			showdusty.onclick = function() {
+			
+				document.getElementById("showdusty").disabled = true;
+			
+				// Marche bien
+				var url = 'marine_anims_core.json';
+				new THREE.ObjectLoader().load( url, function ( loadedObject ) {
+				
+					loadedObject.traverse( function ( child ) {
+						if ( child instanceof THREE.SkinnedMesh ) {
+							mesh = child;
+						}
+					} );
+				
+					if ( mesh === undefined ) {
+						alert( 'Unable to find a SkinnedMesh in this place:\n\n' + url + '\n\n' );
+						return;
+					}
+					mesh.rotation.y = - 180 * Math.PI / 180;
+					
+					mesh.scale.set(.01,.01,.01);
+					mesh.translateX( 6 );
+					mesh.translateZ( 3.5 );
+					
+					scene.add( mesh );
+					
+					// Initialize mixer and clip actions
+					mixer = new THREE.AnimationMixer( mesh );
+					idleAction = mixer.clipAction( 'idle' );
+					walkAction = mixer.clipAction( 'walk' );
+					
+					//idleAction = mixer.clipAction('Dust07_01');
+					//walkAction = mixer.clipAction('Dust07_01');
+					
+					//runAction = mixer.clipAction( 'run' );
+					
+					setWeight(walkAction,0);
+					setWeight(idleAction,1);
+					//setWeight(runAction,0);
+					walkAction.play();
+					idleAction.play();
+					//runAction.play();
+					Dusty=mesh;
+					DustySetp=0;
+					console.log("Dusty OK");
+				});
+				
+	
+				//----------------------------------------------------------
+				//Avatar
+				/*
+				//var url = 'marine_anims_core.json';
+				var url = 'dusty.json';
+				new THREE.ObjectLoader().load( url, function ( loadedObject ) {
+				
+					loadedObject.traverse( function ( child ) {
+						if ( child instanceof THREE.SkinnedMesh ) {
+							mesh = child;
+						}
+					} );
+				
+					if ( mesh === undefined ) {
+						alert( 'Unable to find a SkinnedMesh in this place:\n\n' + url + '\n\n' );
+						return;
+					}
+					mesh.rotation.y = - 180 * Math.PI / 180;
+					
+					mesh.scale.set(.01,.01,.01);
+					mesh.translateX( 6 );
+					mesh.translateZ( 3.5 );
+					
+					scene.add( mesh );
+					
+					// Initialize mixer and clip actions
+					mixer = new THREE.AnimationMixer( mesh );
+					//idleAction = mixer.clipAction( 'idle' );
+					//walkAction = mixer.clipAction( 'walk' );
+					
+					idleAction = mixer.clipAction('Dust07_01');
+					walkAction = mixer.clipAction('Dust07_01');
+					
+					//runAction = mixer.clipAction( 'run' );
+					
+					setWeight(walkAction,0);
+					setWeight(idleAction,1);
+					//setWeight(runAction,0);
+					walkAction.play();
+					idleAction.play();
+					//runAction.play();
+					Dusty=mesh;
+					DustySetp=0;
+					console.log("Dusty OK");
+				});
+				*/
+				
+				/*
+				 // Prepare JSONLoader
+				var url = 'dusty.json';
+				var jsonLoader = new THREE.JSONLoader();
+				jsonLoader.load(url, function(model, materials) {
+					materials.forEach(function(mat) {
+					mat.skinning = true;
+					mat.opacity=1;
+					mat.morphTargets = true; 
+					console.log(mat);
+					});
+					
+					
+					// Prepare SkinnedMesh with MeshFaceMaterial (using original texture)
+					var modelMesh = new THREE.SkinnedMesh(
+						model, new THREE.MultiMaterial(materials)
+					);
+					// Set position and scale
+					var scale = 1;
+					modelMesh.position.set(0, 0, 0);
+					modelMesh.scale.set(scale, scale, scale);
+				
+					// Add the mesh and play the animation
+					scene.add(modelMesh);
+					var clips = model.animations;
+					mixer = new THREE.AnimationMixer( modelMesh );
+					console.log("clip_0"+clips[0]);
+					idleAction = mixer.clipAction( clips[0] ).play();
+					//idleAction = mixer.clipAction( 'Dust07_01' );
+					walkAction = mixer.clipAction( clips[0] ).play();
+					//runAction = mixer.clipAction( 'run' );
+					
+					setWeight(walkAction,0);
+					setWeight(idleAction,1);
+					//setWeight(runAction,0);
+					//walkAction.play();
+					//idleAction.play();
+					//runAction.play();
+					Dusty=modelMesh;
+					DustySetp=0;
+				
+				
+				});
+				*/
+				/* a finir
+				var url = 'Dusty.txt';
+				 var loader = new THREE.GLTFLoader();
+
+            // Load a glTF resource
+            loader.load(url,
+                function (gltf) {
+			
+                    var model = gltf.scene;
+                    scene.add(model);
+
+                    mixer = new THREE.AnimationMixer(model);
+					idleAction = mixer.clipAction( gltf.animations[0] ).play();
+					//idleAction = mixer.clipAction( 'Dust07_01' );
+					walkAction = mixer.clipAction( gltf.animations[0] ).play();
+					//runAction = mixer.clipAction( 'run' );
+					
+					setWeight(walkAction,0);
+					setWeight(idleAction,1);
+					
+					
+					Dusty=model;
+					DustySetp=0;
+					console.log("Dusty OK");
+                });
+*/
+			};
+	
+			
+			
+			//----------------------
+			//SLIDERS
+			var sliderX = document.getElementById("myRangeX");
+			// Update the current slider value (each time you drag the slider handle)
+			sliderX.oninput = function() {
+				concreteX_offset=this.value;
+				//console.log('offsetX='+concreteX_offset);
+				concrateBase.scale.set(concreteX_offset/100,1,concreteY_offset/100);
+				
+				CBpilar1_mesh.position.set(-3-(concreteHeight*concreteX_offset/100)/2, -3.25, (concreteWidth*concreteY_offset/100)/2 -1 );
+				CBpilar2_mesh.position.set(-3-(concreteHeight*concreteX_offset/100)/2, -3.25, 0-((concreteWidth*concreteY_offset/100)/2 -1) );
+				CBpilar3_mesh.position.set(-5+(concreteHeight*concreteX_offset/100)/2, -3.25, 0-((concreteWidth*concreteY_offset/100)/2 -1) );
+				CBpilar4_mesh.position.set(-5+(concreteHeight*concreteX_offset/100)/2, -3.25, (concreteWidth*concreteY_offset/100)/2 -1) ;
+				
+				
+			}
+			var sliderY = document.getElementById("myRangeY");
+			// Update the current slider value (each time you drag the slider handle)
+			sliderY.oninput = function() {
+				concreteY_offset=this.value;
+				//console.log('offsetY='+concreteY_offset);
+				concrateBase.scale.set(concreteX_offset/100,1,concreteY_offset/100);
+				bin_mesh.scale.set(concreteX_offset/100,1,concreteY_offset/100);
+				pilar1_mesh.position.set(-10, 2.75, (concreteWidth*concreteY_offset/100)/2 -0.3 );
+				pilar2_mesh.position.set(-10, 2.75, 0-((concreteWidth*concreteY_offset/100)/2 -0.3) );
+				pilar3_mesh.position.set(-3.5, 2.75, 0-((concreteWidth*concreteY_offset/100)/2 -0.3) );
+				pilar4_mesh.position.set(-3.5, 2.75, (concreteWidth*concreteY_offset/100)/2 -0.3) ;
+				
+			
+				CBpilar1_mesh.position.set(-3-(concreteHeight*concreteX_offset/100)/2, -3.25, (concreteWidth*concreteY_offset/100)/2 -1 );
+				CBpilar2_mesh.position.set(-3-(concreteHeight*concreteX_offset/100)/2, -3.25, 0-((concreteWidth*concreteY_offset/100)/2 -1) );
+				CBpilar3_mesh.position.set(-5+(concreteHeight*concreteX_offset/100)/2, -3.25, 0-((concreteWidth*concreteY_offset/100)/2 -1) );
+				CBpilar4_mesh.position.set(-5+(concreteHeight*concreteX_offset/100)/2, -3.25, (concreteWidth*concreteY_offset/100)/2 -1) ;
+			}
+			
+			
+			EXPORT_WIDTH = 300;
+
+function save_chart(chart) {
+    var render_width = EXPORT_WIDTH;
+    var render_height = render_width * chart.chartHeight / chart.chartWidth
+
+    // Get the cart's SVG code
+    var svg = chart.getSVG({
+        exporting: {
+            sourceWidth: chart.chartWidth,
+            sourceHeight: chart.chartHeight
+        }
+    });
+/*
+    // Create a canvas
+    var canvas44 = document.createElement('canvas_44');
+    canvas44.height = render_height;
+    canvas44.width = render_width;
+    document.body.appendChild(canvas44);
+*/
+    // Create an image and draw the SVG onto the canvas
+    var image = new Image;
+    image.onload = function() {
+        document.getElementById('canvas_33').getContext('2d').drawImage(this, 0, 0, render_width, render_height);
+    };
+    image.src = 'data:image/svg+xml;base64,' + window.btoa(svg);
+}
+
+
+				function changeCanvas() {
+					ctx.font = '20pt Arial';
+					ctx.fillStyle = 'red';
+					ctx.fillRect(0, 0, canvas.width, canvas.height);
+					ctx.fillStyle = 'white';
+					ctx.fillRect(10, 10, canvas.width - 20, canvas.height - 20);
+					ctx.fillStyle = 'black';
+					ctx.textAlign = "center";
+					ctx.textBaseline = "middle";
+					ctx.fillText(new Date().getTime(), canvas.width / 2, canvas.height / 2);
+				}
+			
+			  ///////////////////////////////////////////////////////////////////
+			  // Creates CSS Renderer
+			  //
+			  ///////////////////////////////////////////////////////////////////
+			  function createCssRenderer() {
+				var cssRenderer = new THREE.CSS3DRenderer();
+				
+				//var cssRenderer = new THREE.CSS3DStereoRenderer();
+				cssRenderer.setSize(window.innerWidth, window.innerHeight);
+				cssRenderer.domElement.style.position = 'absolute';
+				renderer.domElement.style.zIndex = 0;
+				cssRenderer.domElement.style.top = 0;
+				return cssRenderer;
+			  }
+  ///////////////////////////////////////////////////////////////////
+  // Creates plane mesh
+  //
+  ///////////////////////////////////////////////////////////////////
+  function createPlane(w, h, position, rotation) {
+    var material = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      opacity: 0.0,
+      side: THREE.DoubleSide
+    });
+    var geometry = new THREE.PlaneGeometry(w, h);
+    var mesh = new THREE.Mesh(geometry, material);
+    mesh.position.x = position.x;
+    mesh.position.y = position.y;
+    mesh.position.z = position.z;
+    mesh.rotation.x = rotation.x;
+    mesh.rotation.y = rotation.y;
+    mesh.rotation.z = rotation.z;
+    return mesh;
+  }
+  ///////////////////////////////////////////////////////////////////
+  // Creates plane mesh
+  //
+  ///////////////////////////////////////////////////////////////////
+  function createPlaneWithMaterial(w, h, position, rotation, material) {
+    /*
+	var material = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      opacity: 0.0,
+      side: THREE.DoubleSide
+    });
+	*/
+    var geometry = new THREE.PlaneGeometry(w, h);
+    var mesh = new THREE.Mesh(geometry, material);
+    mesh.position.x = position.x;
+    mesh.position.y = position.y;
+    mesh.position.z = position.z;
+    mesh.rotation.x = rotation.x;
+    mesh.rotation.y = rotation.y;
+    mesh.rotation.z = rotation.z;
+    return mesh;
+  }
+  
+  function createButton(context, func) {
+    var button = document.createElement("input");
+    button.type = "button";
+    button.value = "i m a button";
+    button.onclick = func;
+    context.appendChild(button);
+}
+
+
+  ///////////////////////////////////////////////////////////////////
+  // Creates CSS object
+  //
+  ///////////////////////////////////////////////////////////////////
+  function createCssObject(w, h, position, rotation, url) {
+  /*
+    var html = [
+      '<div style="width:' + w + 'px; height:' + h + 'px;">',
+      '<iframe src="' + url + '" width="' + w + '" height="' + h + '">',
+      '</iframe>',
+      '</div>'
+    ].join('\n');
+	*/
+	
+	 //HTML
+            var element = document.createElement('div');
+            element.innerHTML = 'Plain text inside a div.';
+            element.style.background = "#0094ff";
+            element.style.fontSize = "2em";
+            element.style.color = "white";
+            element.style.padding = "2em";
+			
+			
+			createButton(element, function() {
+        //highlight(this.parentNode.childNodes[1]);
+        // Example of different context, copied function etc
+        // createButton(this.parentNode, this.onclick);
+		console.log("clicked!!!!!!!!!!!!!!!!");
+    });
+			
+
+	/*
+    var div = document.createElement('div');
+    //$(div).html(html);
+	div.innerHTML='html';
+	
+	// var elementHeight = elementWidth * aspectRatio;
+        div.style.width  = 1000 + "px";
+        div.style.height = 1000 + "px";
+
+	
+	
+    var cssObject = new THREE.CSS3DObject(div);
+	*/
+	var cssObject = new THREE.CSS3DObject(element);
+	
+    cssObject.position.x = position.x;
+    cssObject.position.y = position.y;
+    cssObject.position.z = position.z;
+    cssObject.rotation.x = rotation.x;
+    cssObject.rotation.y = rotation.y;
+    cssObject.rotation.z = rotation.z;
+	cssObject.scale.set(0.005,0.005,0.005);
+	
+    return cssObject;
+  }
+  ///////////////////////////////////////////////////////////////////
+  // Creates 3d webpage object
+  //
+  ///////////////////////////////////////////////////////////////////
+  function create3dPage(w, h, position, rotation, url) {
+    var plane = createPlane(
+        w, h,
+        position,
+        rotation);
+    scene.add(plane);
+    var cssObject = createCssObject(
+        w, h,
+        position,
+        rotation,
+        url);
+    cssScene.add(cssObject);
+  }
+			init();
+			animate();
+			function init() {
+			
+				
+				Width = container.clientWidth;
+				Height = container.clientHeight;
+				/*
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+				var info = document.createElement( 'div' );
+				info.style.position = 'absolute';
+				info.style.top = '10px';
+				info.style.width = '100%';
+				info.style.textAlign = 'center';
+				info.innerHTML = 'MyPlantPlanner 3d';
+				container.appendChild( info );
+				*/
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x505050 );
+				
+				camera = new THREE.PerspectiveCamera( 70, Width / Height, 0.2, 2000 );
+				
+				
+				camera.position.set( 8, 4, 16 );
+				camera.lookAt( new THREE.Vector3( 0,4, 0 ) );
+			
+				var user = new THREE.Group();
+				user.position.set( 6, 2, 12 );
+				scene.add( user );
+				user.add( camera );
+				/*
+			//-------------------------
+			 // cube
+    var Skycube = new THREE.CubeGeometry(1000, 1000, 1000);
+
+    
+    var cubeMaterials = [
+      // back side
+      new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load('Daylight Box_Back.jpg'),
+        side: THREE.DoubleSide,
+		fog: false
+      }),
+      // front side
+      new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load('Daylight Box_Front.jpg'),
+        side: THREE.DoubleSide,
+		fog: false
+      }), 
+      // Top side
+      new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load('Daylight Box_Top.jpg'),
+        side: THREE.DoubleSide,
+		fog: false
+      }), 
+      // Bottom side
+      new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load('Daylight Box_Top.jpg'),//reuse top
+        side: THREE.DoubleSide,
+		fog: false
+      }), 
+	  
+      // right side
+      new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load('Daylight Box_Right.jpg'),
+        side: THREE.DoubleSide,
+		fog: false
+      }), 
+      // left side
+      new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load('Daylight Box_Left.jpg'),
+        side: THREE.DoubleSide,
+		fog: false
+      }) 
+    ];
+
+    //add cube & materials
+    var cubeMaterial = new THREE.MeshFaceMaterial(cubeMaterials);
+    var mesh = new THREE.Mesh(Skycube, cubeMaterial);
+    scene.add(mesh);
+	*/		
+			//----------------
+			
+			
+			
+			
+			
+				var light = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+				light.position.set( 1, 1, 1 );
+				scene.add( light );
+			
+				
+				//TF--------------
+					var texture_concrete = new THREE.TextureLoader().load( "stone.jpg" );
+					var texture_metal = new THREE.TextureLoader().load( "stone.jpg" );
+					var texture_rocks = new THREE.TextureLoader().load( "stone.jpg" );
+
+/*
+				var loader = new THREE.GLTFLoader();
+				loader.load( 'mp800.txt', function ( gltf ) {
+					mp800 = gltf.scene;
+					mp800.visible=true;
+					mp800.name="MP800";
+					mp800.selectable=1;
+					mp800.translateY(1.8); 
+					scene.add( mp800 );
+					console.log('MP800 OK');
+					document.getElementById("showmp800").disabled = false;
+					
+					mp800.traverse((node) => {
+						node.name="MP800";
+						node.selectable=1;
+					});
+					
+					
+				});
+				loader.load( 'hp6.txt', function ( gltf ) {
+					hp6 = gltf.scene;
+					hp6.visible=false;
+					hp6.name="hp6";
+					hp6.selectable=1;
+					hp6.translateY(1.3); 
+					scene.add( hp6 );
+					console.log('hp6 OK');
+					document.getElementById("showhp6").disabled = false;
+					hp6.traverse((node) => {
+						node.name="hp6";
+						node.selectable=1;
+					});
+				});
+				loader.load( 'symons.txt', function ( gltf ) {
+					symons = gltf.scene;
+					symons.visible=false;
+					symons.name="symons";
+					symons.selectable=1;
+					symons.translateY(1.2); 
+					scene.add( symons );
+					console.log('symons OK');
+					document.getElementById("showsymons").disabled = false;
+					symons.traverse((node) => {
+						node.name="symons";
+						node.selectable=1;
+					});
+				});
+				*/
+					geometry = new THREE.BoxGeometry( 14, 1, 8 );
+				
+				material = new THREE.MeshBasicMaterial( { map: texture_concrete} );
+
+				concrateBase = new THREE.Mesh( geometry, material );
+				concrateBase.position.set(-4, -0.5, 0);
+				concrateBase.name="concrete base";
+				concrateBase.selectable=1;
+				scene.add( concrateBase );
+				
+				
+				var CBpilar1_geometry = new THREE.BoxGeometry( 2, 4.5, 2);
+				CBpilar1_material = new THREE.MeshBasicMaterial( { map: texture_concrete} );
+				CBpilar1_mesh = new THREE.Mesh( CBpilar1_geometry, CBpilar1_material );
+				CBpilar1_mesh.position.set(-10, -3.25, (concreteWidth*concreteY_offset/100)/2 -1 );
+				CBpilar1_mesh.name="Base pilar1";
+				scene.add( CBpilar1_mesh );
+				
+					//------ Pilar2
+				CBpilar2_mesh = new THREE.Mesh( CBpilar1_geometry, CBpilar1_material );
+				CBpilar2_mesh.position.set(-10, -3.25, 0-((concreteWidth*concreteY_offset/100)/2 -1) );
+				CBpilar2_mesh.name="Base pilar2";
+				//tower_mesh.visible=false;
+				scene.add( CBpilar2_mesh );
+				
+				
+				//------ Pilar3
+				CBpilar3_mesh = new THREE.Mesh( CBpilar1_geometry, CBpilar1_material );
+				CBpilar3_mesh.position.set(2, -3.25, 0-((concreteWidth*concreteY_offset/100)/2 -1) );
+				CBpilar3_mesh.name="Base pilar3";
+				//tower_mesh.visible=false;
+				scene.add( CBpilar3_mesh );
+
+				//------ Pilar4
+				CBpilar4_mesh = new THREE.Mesh( CBpilar1_geometry, CBpilar1_material );
+				CBpilar4_mesh.position.set(2, -3.25, (concreteWidth*concreteY_offset/100)/2 -1) ;
+				CBpilar4_mesh.name="Base pilar4";
+				//tower_mesh.visible=false;
+				scene.add( CBpilar4_mesh );
+				
+				
+				//------
+				//------ Pilar1
+				pilar1_geometry = new THREE.BoxGeometry( 0.5, 5.5, 0.5);
+				pilar1_material = new THREE.MeshBasicMaterial( { map: texture_metal} );
+				pilar1_mesh = new THREE.Mesh( pilar1_geometry, pilar1_material );
+				pilar1_mesh.position.set(-10, 2.75, (concreteWidth*concreteY_offset/100)/2 -0.3 );
+			
+				pilar1_mesh.name="Hopper pilar1";
+				//tower_mesh.visible=false;
+				scene.add( pilar1_mesh );
+			
+				//------ Pilar2
+				pilar2_mesh = new THREE.Mesh( pilar1_geometry, pilar1_material );
+				pilar2_mesh.position.set(-10, 2.75, 0-((concreteWidth*concreteY_offset/100)/2 -0.3) );
+				pilar2_mesh.name="Hopper pilar2";
+				//tower_mesh.visible=false;
+				scene.add( pilar2_mesh );
+
+				//------ Pilar3
+				pilar3_mesh = new THREE.Mesh( pilar1_geometry, pilar1_material );
+				pilar3_mesh.position.set(-3.5, 2.75, 0-((concreteWidth*concreteY_offset/100)/2 -0.3) );
+				pilar3_mesh.name="Hopper pilar3";
+				//tower_mesh.visible=false;
+				scene.add( pilar3_mesh );
+
+				//------ Pilar4
+				pilar4_mesh = new THREE.Mesh( pilar1_geometry, pilar1_material );
+				pilar4_mesh.position.set(-3.5, 2.75, (concreteWidth*concreteY_offset/100)/2 -0.3) ;
+				pilar4_mesh.name="Hopper pilar4";
+				//tower_mesh.visible=false;
+				scene.add( pilar4_mesh );
+
+
+				
+				//------ Bin tower
+				bin_geometry = new THREE.BoxGeometry( 8, 7, 8 );
+				bin_material = new THREE.MeshBasicMaterial( { map: texture_metal} );
+				bin_mesh = new THREE.Mesh( bin_geometry, bin_material );
+				bin_mesh.position.set(-7, 9, 0);
+				bin_mesh.name="Hopper";
+				bin_mesh.selectable=1;
+				//tower_mesh.visible=false;
+				scene.add( bin_mesh );
+				//------
+				
+				var product_geometry = new THREE.ConeGeometry( 3, 4, 128 );
+				var product_material = new THREE.MeshBasicMaterial( {map: texture_rocks} );
+				var product_mesh = new THREE.Mesh( product_geometry, product_material );
+				product_mesh.position.set(16, -1.5, 0);
+				product_mesh.name="Product pile";
+				product_mesh.selectable=1;
+				scene.add( product_mesh );
+				
+				var convOut_geometry = new THREE.BoxGeometry( 16, 0.5, 2 );
+				var convOut_material = new THREE.MeshBasicMaterial( { map: texture_metal} );
+				var convOut_mesh = new THREE.Mesh( convOut_geometry, convOut_material );
+				convOut_mesh.position.set(7.5, -0.5, 0);
+				convOut_mesh.rotation.z = Math.PI / 16;
+				convOut_mesh.name="Product conveyor";
+				convOut_mesh.selectable=1;
+				scene.add( convOut_mesh );
+				//TF--------------
+				
+				
+				//--
+				//grid
+				var geometryGrid = new THREE.Geometry();
+				geometryGrid.vertices.push(new THREE.Vector3( - 500, -3.5, 0 ) );
+				geometryGrid.vertices.push(new THREE.Vector3( 500, -3.5, 0 ) );
+				
+
+				var linesMaterial = new THREE.LineBasicMaterial( { color: 0xFFFFFF, opacity: .8, linewidth: .1 } );
+
+				for ( var i = 0; i <= 100; i ++ ) {
+
+					var line = new THREE.Line( geometryGrid, linesMaterial );
+					line.name="Grid";
+					line.position.z = ( i * 10 ) - 500;
+					scene.add( line );
+
+					var line = new THREE.Line( geometryGrid, linesMaterial );
+					line.name="Grid";
+					line.position.x = ( i * 10 ) - 500;
+					line.rotation.y = 90 * Math.PI / 180;
+					scene.add( line );
+				}
+				
+				
+				var textureC = THREE.ImageUtils.loadTexture( "stone.jpg" );
+				// assuming you want the texture to repeat in both directions:
+				textureC.wrapS = THREE.RepeatWrapping; 
+				textureC.wrapT = THREE.RepeatWrapping;
+
+				// how many times to repeat in each direction; the default is (1,1),
+				//   which is probably why your example wasn't working
+				textureC.repeat.set( 40, 40 ); 
+
+				//material = new THREE.MeshLambertMaterial({ map : texture });
+				//var textureC = loader.load( 'concrete.png', function ( texture ) {
+
+				//texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+				//texture.offset.set( 0, 0 );
+				//texture.repeat.set( 100, 100 );
+
+			//} );
+
+				var geoFloor = new THREE.PlaneBufferGeometry(1000, 1000, 8, 8);
+				var geoMat = new THREE.MeshLambertMaterial({ map: textureC});
+				
+				geoFloor.translate(-3.5,-3.5,-3.5);
+				var geoPlane = new THREE.Mesh(geoFloor, geoMat);
+				geoPlane.name="Floor";
+				scene.add(geoPlane);
+				geoPlane.rotateX( - Math.PI / 2);
+				
+								
+				
+				//
+				renderer = new THREE.WebGLRenderer( { antialias: true , alpha:true} );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( Width, Height );
+				//renderer.vr.enabled = true;
+				
+				//renderer.domElement.style.position = 'absolute';
+				//renderer.domElement.style.zIndex = 1;
+				//renderer.domElement.style.top = 0;
+				renderer.setClearColor(0xECF8FF);
+				 
+				 //fog
+				//scene.fog = new THREE.FogExp2( 0x000000, 0.00528 );
+				//renderer.setClearColor( scene.fog.color, 1 );
+				
+	
+				container.appendChild( renderer.domElement );
+				
+				/*
+				cssRenderer = createCssRenderer();
+				cssRenderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild(cssRenderer.domElement);
+				cssRenderer.domElement.appendChild(renderer.domElement);
+				cssScene = new THREE.Scene();
+				create3dPage(
+				  2, 2,
+				  new THREE.Vector3(0, 0, 5),//position
+				  new THREE.Vector3(0, 0, 0),
+				   './page1.html');
+	  */
+	  
+				
+				
+	
+				//
+				//document.body.appendChild( WEBVR.createButton( renderer ) );
+				container.appendChild( WEBVR.createButton( renderer ) );
+				// controllers
+				function onSelectStart() {
+					this.userData.isSelecting = true;
+				}
+				function onSelectEnd() {
+					this.userData.isSelecting = false;
+				}
+				
+				
+
+				controller1 = renderer.vr.getController( 0 );
+				controller1.addEventListener( 'selectstart', onSelectStart );
+				controller1.addEventListener( 'selectend', onSelectEnd );
+				scene.add( controller1 );
+				controller2 = renderer.vr.getController( 1 );
+				controller2.addEventListener( 'selectstart', onSelectStart );
+				controller2.addEventListener( 'selectend', onSelectEnd );
+				scene.add( controller2 );
+				
+				
+				// controls
+				controls = new THREE.OrbitControls( camera, renderer.domElement );
+				//controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
+				/*
+				controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+				controls.dampingFactor = 0.25;
+				controls.screenSpacePanning = false;
+				controls.minDistance = 2;
+				controls.maxDistance = 100;
+				controls.maxPolarAngle = Math.PI / 2;
+				*/
+				controls.enableDamping = false;
+				//controls.maxPolarAngle = Math.PI/2; 
+				controls.screenSpacePanning = false;
+				controls.minDistance = 0;
+				controls.maxDistance = 100;
+				//.maxAzimuthAngle : Float//horizontal 
+				//.minAzimuthAngle : Float
+				
+			/*
+  				// to disable zoom
+					controls.enableZoom = false;
+
+					// to disable rotation
+					controls.enableRotate = false;
+
+					// to disable pan
+					controls.enablePan = false;
+			*/
+				
+				
+				
+				//container.appendChild( renderer.domElement );
+				
+				
+				
+				// helpers
+				/*
+				var geometry = new THREE.BufferGeometry();
+				geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0, 0, 0, - 1 ], 3 ) );
+				geometry.addAttribute( 'color', new THREE.Float32BufferAttribute( [ 0.5, 0.5, 0.5, 0, 0, 0 ], 3 ) );
+				var material = new THREE.LineBasicMaterial( { vertexColors: true, blending: THREE.AdditiveBlending } );
+				controller1.add( new THREE.Line( geometry, material ) );
+				controller2.add( new THREE.Line( geometry, material ) );
+				*/
+				//
+
+				
+				
+			
+				
+								
+	
+	/*			
+				textureCanvas = new THREE.Texture(canvas);
+				var materialCanvas = new THREE.MeshBasicMaterial({ map: textureCanvas });
+	
+				var planeCanvas = createPlaneWithMaterial(2, 2,     new THREE.Vector3(3, 0, 5), new THREE.Vector3(0, 0, 0),materialCanvas);
+				scene.add( planeCanvas );
+		*/		
+				
+				
+				
+				
+				
+				
+				
+				
+				window.addEventListener( 'resize', onWindowResize, false );
+			}
+			function onWindowResize() {
+			/*
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				*/
+				Width = container.clientWidth;
+				Height = container.clientHeight;
+				camera.aspect = Width / Height;
+				camera.updateProjectionMatrix();
+				renderer.setSize(Width, Height);
+				cssRenderer.setSize(Width, Height);
+			}
+			function handleController( controller ) {
+			/*
+				if ( controller.userData.isSelecting ) {
+					var object = room.children[ count ++ ];
+					object.position.copy( controller.position );
+					object.userData.velocity.x = ( Math.random() - 0.5 ) * 3;
+					object.userData.velocity.y = ( Math.random() - 0.5 ) * 3;
+					object.userData.velocity.z = ( Math.random() - 9 );
+					object.userData.velocity.applyQuaternion( controller.quaternion );
+					if ( count === room.children.length ) count = 0;
+				}
+				*/
+			}
+			//
+			function animate() {
+				renderer.setAnimationLoop( render );
+			}
+			//-------------------------------
+			//render
+			function render() {
+				handleController( controller1 );
+				handleController( controller2 );
+				controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
+							
+				var mixerUpdateDelta = clock.getDelta();
+				// Update the animation mixer, the stats panel, and render this frame
+				if(mixer!=undefined)
+					mixer.update( mixerUpdateDelta );
+					var course=90;
+					DustySetp++;
+					if((DustySetp>100)&&(DustySetp<150+course))
+					{
+					
+						setWeight(walkAction,1);
+						setWeight(idleAction,0);
+						Dusty.translateZ(-0.05);
+					}
+					if((DustySetp>150+course)&&(DustySetp<300+course))
+					{
+						setWeight(walkAction,0);
+						setWeight(idleAction,1);
+					}
+					if((DustySetp>300+course)&&(DustySetp<345+course))
+					{
+						setWeight(walkAction,1);
+						setWeight(idleAction,0);
+						Dusty.rotation.y = ((DustySetp-(300+course))*4- 180) * Math.PI / 180;
+					}
+					if((DustySetp>345+course)&&(DustySetp<395+course+course))
+					{
+						Dusty.translateZ(-0.05);
+					}
+					if((DustySetp>395+course+course)&&(DustySetp<440+course+course))
+					{
+						Dusty.rotation.y = ((DustySetp-(395+course+course))*4) * Math.PI / 180;
+					}
+					if((DustySetp>440+course+course))
+					{
+						DustySetp=0;
+						setWeight(walkAction,0);
+						setWeight(idleAction,1);
+						}
+					
+
+/*
+				//changeCanvas();
+				save_chart(chart);
+				textureCanvas.needsUpdate = true;
+*/
+							
+				//----------------------------
+				// mouse management
+				
+				if((mouseUsed==true)&&(MouseClickDown==false))
+				{
+					raycaster.setFromCamera( mouse, camera ); 
+					
+					/*
+					scene.remove ( arrow );
+					arrow=new THREE.ArrowHelper( raycaster.ray.direction, raycaster.ray.origin, 100, Math.random() * 0xffffff );
+					scene.add(arrow);
+					*/
+					// calculate objects intersecting the picking ray 
+					var intersects =  raycaster.intersectObjects( scene.children,true ); 
+					if(intersects.length>0)
+					{
+						//if(intersects[ 0 ].object.name.length>0)
+						//	console.log("--- >" + intersects[ 0 ].object.name+" "+intersects[ 0 ].object.selectable);
+						lastElementMouseOver=intersects[ 0 ].object.name;
+						//if((lastElementMouseOver!="Floor")&&(lastElementMouseOver!="Grid"))
+						if(intersects[ 0 ].object.selectable!=undefined)
+						{
+							lastElementMouseOverSelectable=true;
+							if ( intersects[ 0 ].object != INTERSECTED ){
+								// restore previous intersection object (if it exists) to its original color
+								if ( INTERSECTED )
+									if(INTERSECTED.material.color)
+										INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+								// store reference to closest object as current intersection object
+								INTERSECTED = intersects[ 0 ].object;
+								// store color of closest object (for later restoration)
+								if(INTERSECTED.material.color)
+									INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+									
+								// set a new color for closest object
+								if(INTERSECTED.material.color)
+									INTERSECTED.material.color.setHex( 0xff8546 );
+							}
+						}
+						else
+						{
+							  // restore previous intersection object (if it exists) to its original color
+							if ( INTERSECTED )
+								INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+							// remove previous intersection object reference
+							//     by setting current intersection object to "nothing"
+							INTERSECTED = null;
+							lastElementMouseOverSelectable=false;
+						}
+						
+					}
+					else
+					{
+						txt.style.display = "none";
+						  // restore previous intersection object (if it exists) to its original color
+						if ( INTERSECTED )
+							INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+						// remove previous intersection object reference
+						//     by setting current intersection object to "nothing"
+						INTERSECTED = null;
+						lastElementMouseOverSelectable=false;
+					}
+				}
+				
+				
+				//------------------
+				// test VR mode
+				if(renderer.vr.isPresenting()==true)
+				{
+					if(renderer_vr_isPresenting==false)
+					{
+						//entering in VR mode
+						//bin_mesh.visible=false;
+						renderer_vr_isPresenting=true;
+					}
+					
+				}
+				else{
+					if(renderer_vr_isPresenting==true)
+					{
+						//leaving  VR mode
+						//bin_mesh.visible=true;
+						renderer_vr_isPresenting=false;
+					}
+					
+				}
+			
+				
+				renderer.render( scene, camera );
+			//	cssRenderer.render(cssScene, camera);
+			}
+			
+			//--------------------------------------
+			// mouse
+			function onDocumentMouseDown( event ) { 
+			
+				mouseDown.x=mouse.x;
+				mouseDown.y=mouse.y;
+				document.getElementById("mydiv").style.visibility = "hidden";
+				MouseClickDown=true;
+				
+				if(lastElementMouseOver!="")
+				{
+					//if((lastElementMouseOver=="node0")||(lastElementMouseOver==""))
+					if(lastElementMouseOver=="node0")
+						lastElementMouseOver="crusher";
+					if(lastElementMouseOver=="Untitled_1")
+						lastElementMouseOver="MP800";
+					if(lastElementMouseOver.startsWith("Untitled.001"))
+						lastElementMouseOver="Symons";
+				 
+					txt.textContent = lastElementMouseOver + " clicked";
+					txt.style.display = "block";
+					if(lastElementMouseOver=="concrete base"){
+						console.log('=====>show');
+						document.getElementById('p1').style.display = "inline";
+						document.getElementById('p2').style.display = "inline";
+						document.getElementById('myRangeX').style.display = "inline";
+						document.getElementById('myRangeY').style.display = "inline";
+					}
+					else{
+						document.getElementById('p1').style.display = "none";
+						document.getElementById('p2').style.display = "none";
+						document.getElementById('myRangeX').style.display = "none";
+						document.getElementById('myRangeY').style.display = "none";
+					}
+					
+					if(lastElementMouseOverSelectable==true)
+					{
+					/*
+						document.getElementById("mydiv").style.visibility = "visible";// "hidden";
+						document.getElementById("mydiv").style.top = event.clientY+ "px";
+						document.getElementById("mydiv").style.left = event.clientX+ "px";
+						document.getElementById("mydivheaderTxt").innerHTML=lastElementMouseOver;
+						document.getElementById("mydivcontentTxt").innerHTML="<p></p><p>Properties</p><p>for "+lastElementMouseOver+"</p>";
+						*/
+					}
+					else
+					{
+						document.getElementById("mydiv").style.visibility = "hidden";
+					}
+				}
+				else
+				{
+					document.getElementById("mydiv").style.visibility = "hidden";
+				}
+			 
+			} 
+			container.addEventListener( 'mousedown', onDocumentMouseDown, false );
+
+			
+			function onDocumentMouseUp( event ) { 
+				
+				MouseClickDown=false;
+				var d = mouseDown.distanceTo( mouse );
+				console.log ("bougé:"+d);
+				if(d<0.001)//pas bougé
+				{
+					if(lastElementMouseOver!="")
+					{
+						if(lastElementMouseOverSelectable==true)
+						{
+							document.getElementById("mydiv").style.visibility = "visible";// "hidden";
+							document.getElementById("mydiv").style.top = event.clientY+ "px";
+							document.getElementById("mydiv").style.left = event.clientX+ "px";
+							document.getElementById("mydivheaderTxt").innerHTML=lastElementMouseOver;
+							if(lastElementMouseOver!="Product pile")
+							{
+								document.getElementById("mydivcontentTxt").innerHTML="<p></p><p>Properties</p><p>for "+lastElementMouseOver+"</p>";
+							}
+							else
+							{
+									document.getElementById("mydivcontentTxt").innerHTML="<p></p><p>Properties</p><p>for "+lastElementMouseOver+"</p><div id='container_chart'></div>";
+									var chart = Highcharts.chart('container_chart', {
+
+									credits: {
+										enabled: false
+									},
+									  chart: {
+											height: 200,
+											type: 'line'
+										},
+									xAxis: {
+										categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+									},
+
+									series: [{
+										data: [29.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4]
+									}]
+
+								});
+							}
+						}
+					}
+				}
+				
+			
+			 
+			} 
+			container.addEventListener( 'mouseup', onDocumentMouseUp, false );
+
+			function onMouseMove( event ) { 
+			  // calculate mouse position in normalized device coordinates 
+			  // (-1 to +1) for both components 
+			 // mouse.x =  ( event.clientX - container.offsetLeft/ container.clientWidth ) * 2 - 1; 
+			 // mouse.y = - ( event.clientY - container.offsetTop / container.clientHeight ) * 2 + 1; 
+				mouse.x = ( ( event.clientX - container.offsetLeft ) / renderer.domElement.clientWidth ) * 2 - 1;
+				mouse.y = - ( ( event.clientY - container.offsetTop ) / renderer.domElement.clientHeight ) * 2 + 1;
+				mouseUsed=true;
+				
+				//console.log("aaaa"+container.offsetTop);
+			} 
+			container.addEventListener( 'mousemove', onMouseMove, false );  
+			
+			
+			
+		</script>
+	</body>
+</html>
